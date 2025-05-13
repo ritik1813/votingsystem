@@ -1,4 +1,4 @@
- 
+import React, { useState, useEffect, useRef } from 'react';
 
 const ResultsDisplay = () => {
   console.log("ResultsDisplay component rendering");
@@ -669,4 +669,4 @@ const renderWinner = () => {
     </div>
   );
 };
- 
+export default ResultsDisplay; 

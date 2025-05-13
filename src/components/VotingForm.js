@@ -1,4 +1,7 @@
-const teams = [1, 2, 3];
+
+
+// Add React import at the top
+import React, { useState, useEffect } from 'react';
 
 const evaluationDescriptions = {
   presentationSkills: {
@@ -441,3 +444,4 @@ const VotingForm = () => {
     </div>
   );
 };
+export default VotingForm;

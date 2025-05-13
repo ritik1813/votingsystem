@@ -1,8 +1,9 @@
-// App.js
-// Main application component
+import React, { useState } from 'react';
+import VotingForm from './components/VotingForm';
+import ResultsDisplay from './components/ResultsDisplay';
 
 // Create icon placeholders if needed
-if (!window.lucide) {
+if (typeof window !== 'undefined' && !window.lucide) {
   window.lucide = {
     Award: (props) => React.createElement('div', { ...props, className: 'icon-placeholder' }, '🏆'),
     Trophy: (props) => React.createElement('div', { ...props, className: 'icon-placeholder' }, '🏆'),
@@ -18,12 +19,11 @@ if (!window.lucide) {
 }
 
 const App = () => {
-  const isResultsPage = window.location.pathname.includes('/results');
-
-  const [isAdmin, setIsAdmin] = React.useState(false);
-  const [password, setPassword] = React.useState('');
-  const [passwordError, setPasswordError] = React.useState('');
-  const [loading, setLoading] = React.useState(false);
+  const isResultsPage = typeof window !== 'undefined' && window.location.pathname.includes('/results');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -100,3 +100,5 @@ const App = () => {
     </div>
   );
 };
+
+export default App;
