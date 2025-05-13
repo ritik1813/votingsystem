@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ハッカソン投票システム</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- React and ReactDOM development versions -->
+    <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+    
+    <!-- Debug element to see if the page loads -->
+    <div id="page-loaded" style="display: none;"> </div>
+    
+    <style>
+        @keyframes fall {
+            0% { transform: translateY(0) rotate(0); opacity: 1; }
+            100% { transform: translateY(600px) rotate(720deg); opacity: 0; }
+        }
+        
+        .animate-fall {
+            animation: fall ease-in forwards;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.8; }
+        }
+        
+        .animate-pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        
+        .animate-bounce {
+            animation: bounce 2s ease-in-out infinite;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.5s forwards;
+        }
+        
+        .icon-placeholder {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background-color: #eee;
+            border-radius: 50%;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Simple debug info -->
+    <div id="debug-info" class="p-4 bg-yellow-100 border border-yellow-400 text-yellow-800 rounded m-4" 
+         style="display: none;">
+        <h2 class="font-bold mb-2">Debug Information</h2>
+        <p id="debug-message">Loading page...</p>
+        <p>Path: <span id="debug-path"></span></p>
+        <p>Components: <span id="debug-components">Not loaded yet</span></p>
+        <button onclick="document.getElementById('debug-info').style.display = 'none'" 
+                class="mt-2 px-4 py-1 bg-yellow-200 rounded hover:bg-yellow-300">
+            Hide
+        </button>
+    </div>
+    
+    <!-- Root element for React -->
+    <div id="root"></div>
+
+    <!-- Show debug info on error -->
+    <script>
+        // Show debug info if URL has ?debug=true
+        if (window.location.search.includes('debug=true')) {
+            document.getElementById('debug-info').style.display = 'block';
+        }
+        
+        document.getElementById('debug-path').textContent = window.location.pathname;
+        document.getElementById('page-loaded').style.display = 'block';
+        
+        // Check if components load
+        window.componentLoaded = {
+            VotingForm: false,
+            ResultsDisplay: false,
+            App: false
+        };
+        
+        function updateDebug() {
+            const loaded = Object.entries(window.componentLoaded)
+                .filter(([_, value]) => value)
+                .map(([key, _]) => key)
+                .join(', ');
+            
+            document.getElementById('debug-components').textContent = 
+                loaded || 'None loaded yet';
+        }
+        
+        // Handle errors
+        window.addEventListener('error', function(e) {
+            document.getElementById('debug-info').style.display = 'block';
+            document.getElementById('debug-message').textContent = 
+                'Error: ' + e.message;
+        });
+    </script>
+    
+    <!-- Load the React components in correct order -->
+    <!-- First load component definitions -->
+    <script type="text/babel" src="{{ url_for('static', filename='VotingForm.js') }}"></script>
+    <script type="text/babel">
+        // Mark VotingForm as loaded
+        window.componentLoaded.VotingForm = true;
+        updateDebug();
+    </script>
+    
+    <script type="text/babel" src="{{ url_for('static', filename='ResultsDisplay.js') }}"></script>
+    <script type="text/babel">
+        // Mark ResultsDisplay as loaded
+        window.componentLoaded.ResultsDisplay = true;
+        updateDebug();
+    </script>
+    
+    <!-- Load App last since it depends on the other components -->
+    <script type="text/babel" src="{{ url_for('static', filename='App.js') }}"></script>
+    <script type="text/babel">
+        // Mark App as loaded
+        window.componentLoaded.App = true;
+        updateDebug();
+    </script>
+    
+    <!-- Render the React application after all components are loaded -->
+    <script type="text/babel">
+        try {
+            // Make sure all components are defined in the global scope
+            if (window.componentLoaded.VotingForm && 
+                window.componentLoaded.ResultsDisplay && 
+                window.componentLoaded.App) {
+                
+                ReactDOM.render(<App />, document.getElementById('root'));
+                console.log("React rendering successful");
+                document.getElementById('debug-message').textContent = 'App rendered successfully';
+            } else {
+                throw new Error("Not all components are loaded yet");
+            }
+        } catch (e) {
+            console.error("React rendering error:", e);
+            document.getElementById('debug-info').style.display = 'block';
+            document.getElementById('debug-message').textContent = 'React error: ' + e.message;
+        }
+    </script>
+</body>
+</html>
